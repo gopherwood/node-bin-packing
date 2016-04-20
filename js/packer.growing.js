@@ -57,21 +57,53 @@ Example:
 
 ******************************************************************************/
 
-GrowingPacker = function() { };
+GrowingPacker = function(w, h) {
+  this.init(w, h);
+};
 
 GrowingPacker.prototype = {
+
+  init: function(w, h) {
+    if (w !== undefined && h !== undefined) this.max = { x: 0, y: 0, w: w, h: h };
+  },
+
+  size: function() {
+    return { w: this.root.w, h: this.root.h };
+  },
+
+  overMaxSize: function (w, h) {
+    if (!this.max) return false;
+    return w > this.max.w || h > this.max.h; 
+  },
+
 
   fit: function(blocks) {
     var n, node, block, len = blocks.length;
     var w = len > 0 ? blocks[0].w : 0;
     var h = len > 0 ? blocks[0].h : 0;
+
+    if (this.max) {
+      w = Math.min(w, this.max.w);
+      h = Math.min(h, this.max.h);
+    }
+
     this.root = { x: 0, y: 0, w: w, h: h };
+    this.nofit = [];
+    this.overmax = [];
+
     for (n = 0; n < len ; n++) {
       block = blocks[n];
       if (node = this.findNode(this.root, block.w, block.h))
         block.fit = this.splitNode(node, block.w, block.h);
       else
         block.fit = this.growNode(block.w, block.h);
+
+      if (!block.fit) {
+        if (this.overMaxSize(block.w, block.h)) 
+          this.overmax.push(block);
+        else 
+          this.nofit.push(block);
+      }
     }
   },
 
@@ -94,6 +126,12 @@ GrowingPacker.prototype = {
   growNode: function(w, h) {
     var canGrowDown  = (w <= this.root.w);
     var canGrowRight = (h <= this.root.h);
+
+    //dont allow it to grow beyond the max
+    if (this.max) {
+      canGrowRight = canGrowRight && (this.root.w + w <= this.max.w);
+      canGrowDown = canGrowDown && (this.root.h + h <= this.max.h);
+    }
 
     var shouldGrowRight = canGrowRight && (this.root.h >= (this.root.w + w)); // attempt to keep square-ish by growing right when height is much greater than width
     var shouldGrowDown  = canGrowDown  && (this.root.w >= (this.root.h + h)); // attempt to keep square-ish by growing down  when width  is much greater than height

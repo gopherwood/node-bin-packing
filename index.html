@@ -39,6 +39,22 @@
       </select>
     </div>
 
+    <div class='size'>
+      <label for='maxsize'>max size: </label>
+      <select id='maxsize'>
+        <option selected>500x500</option>
+        <option>800x600</option>
+        <option>automatic</option>
+      </select>
+    </div>
+    <div class='size'>
+      <label for='multiple'>multiple: </label>
+      <select id='multiple'>
+        <option selected>true</option>
+        <option>false</option>
+      </select>
+    </div>
+
     <div class='sort'>
       <label for='sort'>sort: </label>
       <select id='sort'>
@@ -66,6 +82,9 @@
     <div class="ratio">
       Filled: <span id='ratio'>0</span>%
     </div>
+    <div class="rootsize">
+      Size: <span id='rootsize'>0 x 0</span>
+    </div>
 
     <div id="nofit" class="nofit">
     </div>
@@ -73,11 +92,6 @@
   </div>
 
   <div id="packing">
-    <canvas id="canvas">
-      <div id="unsupported">
-        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-      </div>
-    </canvas>
   </div>
 
   <script src='js/jquery.js'>        </script>
