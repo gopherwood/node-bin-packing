@@ -23,21 +23,22 @@ Demo = {
     Demo.el = {
       examples: $('#examples'),
       blocks:   $('#blocks'),
-      canvas:   $('#canvas')[0],
       size:     $('#size'),
+      maxsize:  $('#maxsize'),
       sort:     $('#sort'),
       color:    $('#color'),
       ratio:    $('#ratio'),
+      multiple: $('#multiple'),
+      rootsize: $('#rootsize'),
       nofit:    $('#nofit')
     };
 
-    if (!Demo.el.canvas.getContext) // no support for canvas
-      return false;
 
-    Demo.el.draw = Demo.el.canvas.getContext("2d");
     Demo.el.blocks.val(Demo.blocks.serialize(Demo.blocks.examples.current()));
     Demo.el.blocks.change(Demo.run);
     Demo.el.size.change(Demo.run);
+    Demo.el.maxsize.change(Demo.run);
+    Demo.el.multiple.change(Demo.run);
     Demo.el.sort.change(Demo.run);
     Demo.el.color.change(Demo.run);
     Demo.el.examples.change(Demo.blocks.examples.change);
@@ -53,8 +54,17 @@ Demo = {
 
   run: function() {
 
+    Demo.canvas.removeAll();
+
     var blocks = Demo.blocks.deserialize(Demo.el.blocks.val());
     var packer = Demo.packer();
+
+    Demo.runForBlocks(packer, blocks);
+  },
+
+  runForBlocks: function (packer, blocks){
+
+    var canvas = Demo.canvas.create();
 
     Demo.sort.now(blocks);
 
@@ -64,17 +74,39 @@ Demo = {
     Demo.canvas.blocks(blocks);
     Demo.canvas.boundary(packer.root);
     Demo.report(blocks, packer.root.w, packer.root.h);
+
+    
+    if (packer.nofit.length > 0) {
+      if (Demo.el.multiple.val() === 'true') {
+        var blocks = packer.nofit.concat(packer.overmax);
+        Demo.runForBlocks(packer, blocks);
+      }
+
+    }
+
   },
+
 
   //---------------------------------------------------------------------------
 
   packer: function() {
     var size = Demo.el.size.val();
-    if (size == 'automatic') {
-      return new GrowingPacker();
+    
+    if (size === 'automatic') {
+
+      var maxsize = Demo.el.maxsize.val();
+  
+      if (maxsize !== 'automatic') {
+        var dims = maxsize.split('x');
+        return new GrowingPacker(parseInt(dims[0]), parseInt(dims[1]));
+      }
+      else {
+        return new GrowingPacker();
+      }
+      
     }
     else {
-      var dims = size.split("x");
+      var dims = size.split('x');
       return new Packer(parseInt(dims[0]), parseInt(dims[1]));
     }
   },
@@ -90,6 +122,7 @@ Demo = {
       else
         nofit.push("" + block.w + "x" + block.h);
     }
+    Demo.el.rootsize.text(w + ' x ' + h);
     Demo.el.ratio.text(Math.round(100 * fit / (w * h)));
     Demo.el.nofit.html("Did not fit (" + nofit.length + ") :<br>" + nofit.join(", ")).toggle(nofit.length > 0);
   },
@@ -130,6 +163,30 @@ Demo = {
   //---------------------------------------------------------------------------
 
   canvas: {
+
+    create: function(){
+     
+      var elementID = 'canvas' + $('canvas').length; // Unique ID
+
+      $('<canvas>').attr({
+          class: 'packing-canvas',
+          id: elementID
+      })
+      /* .css({
+          width: rectWidth + 'px',
+          height: rectHeight + 'px'
+      }) */
+      .appendTo('#packing');
+
+      Demo.el.canvas = document.getElementById(elementID);
+      Demo.el.draw = Demo.el.canvas.getContext("2d");
+
+      return Demo.el.canvas;
+    },
+
+    removeAll: function() {
+      $('.packing-canvas').remove();
+    },
 
     reset: function(width, height) {
       Demo.el.canvas.width  = width  + 1; // add 1 because we draw boundaries offset by 0.5 in order to pixel align and get crisp boundaries

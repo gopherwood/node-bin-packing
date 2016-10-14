@@ -6,7 +6,8 @@
 #settings .size            { clear: both; float: right; }
 #settings .sort            { clear: both; float: right; }
 #settings .color           { clear: both; float: right; margin-bottom: 1em; }
-#settings .ratio           { clear: both; border: 1px solid #999; padding: 1em; }
+#settings .ratio,
+#settings .rootsize            { clear: both; border: 1px solid #999; padding: 1em; }
 #settings .nofit           { display: none; border: 1px solid red; margin-top: 1em; padding: 1em; }
 
 #packing                   { margin-left: 15em; }
